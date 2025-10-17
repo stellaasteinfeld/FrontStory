@@ -7,13 +7,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function CampaignTable({ rows, order, orderBy, onSort, onDelete }) {
     const cols = [
-        { id: "name", label: "Name" },
-        { id: "startDate", label: "Start Date" },
-        { id: "endDate", label: "End Date" },
-        { id: "clicks", label: "Clicks", numeric: true },
-        { id: "cost", label: "Cost", numeric: true },
-        { id: "revenue", label: "Revenue", numeric: true },
-        { id: "profit", label: "Profit", numeric: true },
+        { id: "name", label: "Name", sortable: true },
+        { id: "startDate", label: "Start Date", sortable: true },
+        { id: "endDate", label: "End Date", sortable: true },
+        { id: "clicks", label: "Clicks", numeric: true, sortable: false },
+        { id: "cost", label: "Cost", numeric: true, sortable: false },
+        { id: "revenue", label: "Revenue", numeric: true, sortable: false },
+        { id: "profit", label: "Profit", numeric: true, sortable: true },
         { id: "actions", label: "" },
     ];
 
@@ -28,7 +28,7 @@ export default function CampaignTable({ rows, order, orderBy, onSort, onDelete }
                                 align={c.numeric ? "right" : "left"}
                                 sortDirection={orderBy === c.id ? order : false}
                             >
-                                {c.id !== "actions" ? (
+                                {c.sortable ? (
                                     <TableSortLabel
                                         active={orderBy === c.id}
                                         direction={orderBy === c.id ? order : "asc"}
@@ -36,7 +36,9 @@ export default function CampaignTable({ rows, order, orderBy, onSort, onDelete }
                                     >
                                         {c.label}
                                     </TableSortLabel>
-                                ) : null}
+                                ) : (
+                                    c.label
+                                )}
                             </TableCell>
                         ))}
                     </TableRow>

@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import { useLocalStorage } from "../../hooks/useLocalStorage.js";
 import { initialSeed } from "../../helpers/initialSeed.js";
+import { sortCampaigns } from "../../helpers/sortCampaigns.js";
 import CampaignForm from "../../components/CampaignForm.jsx";
 import CampaignTable from "../../components/CampaignTable.jsx";
 
@@ -10,21 +11,7 @@ export default function Dashboard() {
     const [order, setOrder] = useState("asc");
     const [orderBy, setOrderBy] = useState("name");
 
-    const sorted = useMemo(() => {
-        const cmp = (a, b) => {
-            const val = (key) =>
-                key === "profit"
-                    ? Number(a.revenue) - Number(a.cost) - (Number(b.revenue) - Number(b.cost))
-                    : key === "name"
-                        ? a.name.localeCompare(b.name)
-                        : key === "startDate" || key === "endDate"
-                            ? new Date(a[key]).getTime() - new Date(b[key]).getTime()
-                            : Number(a[key]) - Number(b[key]);
-            const x = val(orderBy);
-            return order === "asc" ? x : -x;
-        };
-        return [...campaigns].sort(cmp);
-    }, [campaigns, order, orderBy]);
+    const rows = sortCampaigns(campaigns, { orderBy, order });
 
     const handleAdd = (payload) => setCampaigns((xs) => [payload, ...xs]);
     const handleDelete = (id) => setCampaigns((xs) => xs.filter((c) => c.id !== id));
@@ -51,7 +38,7 @@ export default function Dashboard() {
 
             <Paper variant="outlined">
                 <CampaignTable
-                    rows={sorted}
+                    rows={rows}
                     order={order}
                     orderBy={orderBy}
                     onSort={handleSort}

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Box, Stack, TextField, Button, Divider, Typography } from "@mui/material";
+import { validateCampaign } from "../helpers/validateCampaign.js";
 
 export default function CampaignForm({ onAdd }) {
     const [form, setForm] = useState({
@@ -11,6 +12,8 @@ export default function CampaignForm({ onAdd }) {
         revenue: "",
     });
 
+    const { errors, valid } = validateCampaign(form);
+
     const onChange = (e) => {
         const { name, value } = e.target;
         setForm((f) => ({ ...f, [name]: value }));
@@ -18,7 +21,7 @@ export default function CampaignForm({ onAdd }) {
 
     const onSubmit = (e) => {
         e.preventDefault();
-        if (!form.name || !form.startDate || !form.endDate) return;
+        if (!valid) return;
 
         onAdd({
             id: crypto.randomUUID?.() ?? String(Date.now()),
@@ -54,6 +57,8 @@ export default function CampaignForm({ onAdd }) {
                     onChange={onChange}
                     required
                     fullWidth
+                    error={!!errors.name}
+                    helperText={errors.name}
                 />
                 <TextField
                     label="Start Date"
@@ -63,6 +68,9 @@ export default function CampaignForm({ onAdd }) {
                     onChange={onChange}
                     InputLabelProps={{ shrink: true }}
                     required
+                    inputProps={{ min: "1900-01-01", max: "2100-12-31" }}
+                    error={!!errors.startDate}
+                    helperText={errors.startDate}
                 />
                 <TextField
                     label="End Date"
@@ -72,6 +80,12 @@ export default function CampaignForm({ onAdd }) {
                     onChange={onChange}
                     InputLabelProps={{ shrink: true }}
                     required
+                    inputProps={{
+                        min: form.startDate || "1900-01-01",
+                        max: "2100-12-31",
+                    }}
+                    error={!!errors.endDate}
+                    helperText={errors.endDate}
                 />
             </Stack>
 
@@ -84,7 +98,9 @@ export default function CampaignForm({ onAdd }) {
                     name="clicks"
                     value={form.clicks}
                     onChange={onChange}
-                    inputProps={{ min: 0 }}
+                    inputProps={{ min: 0, step: 1 }}
+                    error={!!errors.clicks}
+                    helperText={errors.clicks}
                 />
                 <TextField
                     label="Cost"
@@ -93,6 +109,8 @@ export default function CampaignForm({ onAdd }) {
                     value={form.cost}
                     onChange={onChange}
                     inputProps={{ min: 0, step: "0.01" }}
+                    error={!!errors.cost}
+                    helperText={errors.cost}
                 />
                 <TextField
                     label="Revenue"
@@ -101,9 +119,11 @@ export default function CampaignForm({ onAdd }) {
                     value={form.revenue}
                     onChange={onChange}
                     inputProps={{ min: 0, step: "0.01" }}
+                    error={!!errors.revenue}
+                    helperText={errors.revenue}
                 />
                 <Box sx={{ flexGrow: 1 }} />
-                <Button type="submit" variant="contained" size="large">
+                <Button type="submit" variant="contained" size="large" disabled={!valid}>
                     Add
                 </Button>
             </Stack>
