@@ -17,6 +17,11 @@ export default function CampaignTable({ rows, order, orderBy, onSort, onDelete }
         { id: "actions", label: "" },
     ];
 
+    const handleHeaderClick = (colId) => {
+        const nextOrder = orderBy === colId && order === "asc" ? "desc" : "asc";
+        onSort(colId, nextOrder);
+    };
+
     return (
         <TableContainer>
             <Table size="medium">
@@ -32,7 +37,7 @@ export default function CampaignTable({ rows, order, orderBy, onSort, onDelete }
                                     <TableSortLabel
                                         active={orderBy === c.id}
                                         direction={orderBy === c.id ? order : "asc"}
-                                        onClick={() => onSort(c.id)}
+                                        onClick={() => handleHeaderClick(c.id)}
                                     >
                                         {c.label}
                                     </TableSortLabel>

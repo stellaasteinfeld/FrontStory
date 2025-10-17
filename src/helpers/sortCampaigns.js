@@ -1,45 +1,58 @@
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const toTime = (d) => (DATE_RE.test(d) ? Date.parse(d) || 0 : 0);
+
+const toMs = (v) => {
+    const ms = Date.parse(v);
+    return Number.isFinite(ms) ? ms : NaN;
+};
+
 const getProfit = (x) => Number(x?.revenue ?? 0) - Number(x?.cost ?? 0);
 
-function primitiveCompare(a, b) {
-    if (a === b) return 0;
-    return a < b ? -1 : 1;
-}
+const primitiveCompare = (a, b) => (a === b ? 0 : a < b ? -1 : 1);
+
+const compareDates = (a, b) => {
+    const A = toMs(a);
+    const B = toMs(b);
+    const aValid = !Number.isNaN(A);
+    const bValid = !Number.isNaN(B);
+    if (aValid && bValid) return primitiveCompare(A, B);
+    if (aValid && !bValid) return -1;
+    if (!aValid && bValid) return 1;
+    return 0;
+};
 
 export function getCampaignComparator(orderBy = "name", order = "asc") {
     return (a, b) => {
-        let left; let right;
+        let base = 0;
 
         switch (orderBy) {
             case "startDate":
-                left = toTime(a.startDate);
-                right = toTime(b.startDate);
+                base = compareDates(a.startDate, b.startDate);
+                break;
+            case "endDate":
+                base = compareDates(a.endDate, b.endDate);
                 break;
             case "profit":
-                left = getProfit(a);
-                right = getProfit(b);
+                base = primitiveCompare(getProfit(a), getProfit(b));
                 break;
             case "name":
-            default:
+            default: {
                 const an = (a.name ?? "").toString();
                 const bn = (b.name ?? "").toString();
-                const lc = an.localeCompare(bn, undefined, { sensitivity: "base" });
-                return order === "asc" ? lc : -lc;
+                base = an.localeCompare(bn, undefined, { sensitivity: "base" });
+                break;
+            }
         }
 
-        const base = primitiveCompare(left, right);
         return order === "asc" ? base : -base;
     };
 }
 
 export function sortCampaigns(rows, { orderBy = "name", order = "asc" } = {}) {
+    const cmp = getCampaignComparator(orderBy, order);
     return (rows ?? [])
         .map((item, idx) => ({ item, idx }))
         .sort((a, b) => {
-            const cmp = getCampaignComparator(orderBy, order)(a.item, b.item);
-            if (cmp !== 0) return cmp;
-            return a.idx - b.idx;
+            const res = cmp(a.item, b.item);
+            return res !== 0 ? res : a.idx - b.idx;
         })
         .map((x) => x.item);
 }
